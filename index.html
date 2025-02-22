@@ -7,10 +7,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     :root {
-      --azul-pm: #1E3A8A;
+      --azul-pm: #4682B4;
       --azul-claro: #2563EB;
       --cinza-claro: #F3F4F6;
       --background: #FFFFFF;
+      --button-bg: var(--cinza-claro);
+      --button-hover: #e0e0e0;
     }
     * {
       margin: 0;
@@ -20,7 +22,8 @@
     }
     body {
       background-color: var(--background);
-      transition: background 0.3s;
+      color: #333;
+      transition: background 0.3s, color 0.3s;
     }
     .header {
       background: var(--background);
@@ -33,8 +36,20 @@
       top: 0;
       z-index: 100;
     }
+    .header button {
+      background: var(--button-bg);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+      color: inherit;
+    }
+    .header button:hover {
+      background: var(--button-hover);
+    }
     .hero {
-      background-color: var(--azul-pm);
+      background-color: #1F2937;
       color: white;
       padding: 4rem 2rem;
       text-align: center;
@@ -79,7 +94,7 @@
       text-decoration: none;
       color: inherit;
       display: block;
-      transition: transform 0.3s, box-shadow 0.3s;
+      transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
       cursor: pointer;
       border: none;
     }
@@ -137,6 +152,7 @@
       cursor: pointer;
       background-color: #e0e0e0;
       transition: all 0.3s;
+      color: inherit;
     }
     .active-time-filter {
       background-color: var(--azul-pm);
@@ -146,7 +162,7 @@
       width: 120px;
       height: 120px;
       border-radius: 50%;
-      background: conic-gradient(var(--azul-pm) 75%, #e0e0e0 0);
+      background: conic-gradient(var(--azul-pm) 75%, #708090 0);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -181,11 +197,6 @@
         font-size: 2rem;
       }
     }
-    .dark-mode {
-      --background: #1F2937;
-      --cinza-claro: #374151;
-      color: white;
-    }
     /* Estilos para a Modal Pomodoro */
     .pomodoro-modal {
       display: none;
@@ -214,32 +225,43 @@
       cursor: pointer;
       font-size: 1.5rem;
     }
-    .timer {
-      font-size: 3rem;
-      margin: 1rem 0;
-      font-family: monospace;
+    /* Dark Mode Styles */
+    .dark-mode {
+      --background: #1F2937;
+      --cinza-claro: #374151;
+      color: #E5E7EB;
     }
-    .timer-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      margin-top: 1.5rem;
+    .dark-mode a {
+      color: #E5E7EB;
     }
-    .timer-btn {
-      padding: 0.8rem 1.5rem;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      color: white;
+    .dark-mode .header {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
-    #start {
-      background-color: #28a745;
+    .dark-mode .header button {
+      background: #4B5563;
+      color: #E5E7EB;
     }
-    #pause {
-      background-color: #ffc107;
+    .dark-mode .header button:hover {
+      background: #6B7280;
     }
-    #reset {
-      background-color: #dc3545;
+    .dark-mode .disciplina-item {
+      background-color: #1F2937;
+      border: 1px solid #4B5563;
+    }
+    .dark-mode .disciplina-item:hover {
+      background-color: #374151;
+    }
+    .dark-mode .time-filter-btn {
+      background-color: #4B5563;
+      color: #E5E7EB;
+    }
+    .dark-mode .pomodoro-content {
+      background-color: #374151;
+      color: #E5E7EB;
+    }
+    /* Correção: Dashboard com fundo escuro no modo noturno */
+    .dark-mode .dashboards {
+      background-color: var(--background);
     }
   </style>
 </head>
@@ -251,28 +273,25 @@
       <button onclick="openPomodoro()">⏱️ Iniciar Pomodoro</button>
     </div>
   </header>
-
   <!-- Modal Pomodoro -->
   <div class="pomodoro-modal" id="pomodoroModal">
     <div class="pomodoro-content">
       <span class="close-modal" onclick="closePomodoro()">&times;</span>
       <h2>Cronômetro Pomodoro</h2>
-      <div class="timer">
+      <div class="timer" style="font-size: 3rem; margin: 1rem 0; font-family: monospace;">
         <span id="minutes">25</span>:<span id="seconds">00</span>
       </div>
-      <div class="timer-buttons">
-        <button class="timer-btn" id="start"><i class="fas fa-play"></i></button>
-        <button class="timer-btn" id="pause"><i class="fas fa-pause"></i></button>
-        <button class="timer-btn" id="reset"><i class="fas fa-undo"></i></button>
+      <div class="timer-buttons" style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+        <button class="timer-btn" id="start" style="padding: 0.8rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; background-color: #28a745; color: white;"><i class="fas fa-play"></i></button>
+        <button class="timer-btn" id="pause" style="padding: 0.8rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; background-color: #ffc107; color: white;"><i class="fas fa-pause"></i></button>
+        <button class="timer-btn" id="reset" style="padding: 0.8rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; background-color: #dc3545; color: white;"><i class="fas fa-undo"></i></button>
       </div>
     </div>
   </div>
-
   <section class="hero">
-    <h1>Bora que a aprovação é nossa!</h1>
-    <p style="margin-bottom: 1rem; font-size: 1.1rem;">Quem acochambrar é gay.</p>
+    <h1>Bora!</h1>
+    <p style="margin-bottom: 1rem; font-size: 1.1rem;">Hoje é sem acochambrar.</p>
   </section>
-
   <section class="dashboards">
     <h2 style="text-align: center; margin-bottom: 2rem;">Desempenho dos Usuários</h2>
     <div class="dashboard-grid">
@@ -297,31 +316,29 @@
           <p>Português</p>
         </div>
       </div>
-
-      <!-- Dashboard José Gerônimo -->
-      <div class="dashboard-card">
-        <div class="time-filter">
-          <button class="time-filter-btn active-time-filter" onclick="switchTimeFrame(this, 'jose')">Total</button>
-          <button class="time-filter-btn" onclick="switchTimeFrame(this, 'jose')">Hoje</button>
-        </div>
-        <h3>👤 José Gerônimo</h3>
-        <div class="progress-ring" id="jose-progress">89%</div>
-        <div class="stats">
-          <p>🎯 Acurácia Geral: <span id="jose-acuracia">91%</span></p>
-          <p>✅ Questões Corretas: <span id="jose-correct">205</span>/<span id="jose-total">225</span></p>
-          <div class="subject-bar">
-            <div class="subject-progress" id="jose-subject1" style="width: 92%"></div>
-          </div>
-          <p>Direito Constitucional</p>
-          <div class="subject-bar">
-            <div class="subject-progress" id="jose-subject2" style="width: 78%"></div>
-          </div>
-          <p>Matemática</p>
-        </div>
-      </div>
+  <!-- Dashboard José Gerônimo -->
+  <div class="dashboard-card">
+    <div class="time-filter">
+      <button class="time-filter-btn active-time-filter" onclick="switchTimeFrame(this, 'jose')">Total</button>
+      <button class="time-filter-btn" onclick="switchTimeFrame(this, 'jose')">Hoje</button>
     </div>
+    <h3>👤 José Gerônimo</h3>
+    <div class="progress-ring" id="jose-progress">89%</div>
+    <div class="stats">
+      <p>🎯 Acurácia Geral: <span id="jose-acuracia">91%</span></p>
+      <p>✅ Questões Corretas: <span id="jose-correct">205</span>/<span id="jose-total">225</span></p>
+      <div class="subject-bar">
+        <div class="subject-progress" id="jose-subject1" style="width: 92%"></div>
+      </div>
+      <p>Direito Constitucional</p>
+      <div class="subject-bar">
+        <div class="subject-progress" id="jose-subject2" style="width: 78%"></div>
+      </div>
+      <p>Matemática</p>
+    </div>
+  </div>
+</div>
   </section>
-
   <section class="features">
     <div class="feature-card">
       <h3>📚 Material Completo</h3>
@@ -336,7 +353,6 @@
       <p>Interaja com outros candidatos e tire suas dúvidas</p>
     </div>
   </section>
-
   <section class="disciplinas">
     <h2 style="text-align: center; margin-bottom: 1rem;">Disciplinas Disponíveis</h2>
     <div class="disciplinas-grid">
@@ -351,7 +367,6 @@
       <a href="LINK_DRIVE_DIREITOS_HUMANOS" class="disciplina-item" target="_blank">Direitos Humanos</a>
     </div>
   </section>
-
   <section class="ferramentas">
     <h2 style="text-align: center; margin-bottom: 2rem;">Ferramentas de Estudo</h2>
     <div class="ferramenta-item" onclick="openPomodoro()">
@@ -369,11 +384,9 @@
       </div>
     </div>
   </section>
-
-  <footer style="background: var(--azul-pm); color: white; padding: 3rem; text-align: center; margin-top: 4rem;">
+  <footer style="background: #1F2937; color: white; padding: 3rem; text-align: center; margin-top: 4rem;">
     <p>© 2024 Plataforma de Estudos PM-AL - Todos os direitos reservados</p>
   </footer>
-
   <script>
     // Dados iniciais (serão sobrescritos com os registros do Notion)
     const notionUsers = {
@@ -396,10 +409,6 @@
       const userData = notionUsers[user][timeFrame];
       const dashboard = btn.closest('.dashboard-card');
       
-      // Atualiza os dados do dashboard para cada usuário
-      // Para este exemplo, usamos a disciplina padrão:
-      // João: "Legislação PM-AL"
-      // José: "Direito Constitucional"
       let disciplina;
       if (user === 'joao') {
         disciplina = 'Legislação PM-AL';
@@ -524,7 +533,6 @@
         const notionData = await fetchNotionData();
         const updatedUsers = {};
         
-        // Processa cada registro do Notion e agrupa por usuário e período
         notionData.results.forEach(item => {
           const nomeProp = item.properties.Nome;
           const userName = nomeProp && nomeProp.select ? nomeProp.select.name : '';
@@ -532,7 +540,7 @@
 
           const periodoProp = item.properties.Período;
           const periodo = periodoProp && periodoProp.select ? periodoProp.select.name : '';
-          const periodKey = periodo.toLowerCase(); // "total" ou "hoje"
+          const periodKey = periodo.toLowerCase();
 
           const disciplinaProp = item.properties.Disciplina;
           const disciplina = disciplinaProp && disciplinaProp.select ? disciplinaProp.select.name : '';
@@ -551,10 +559,8 @@
           };
         });
         
-        // Atualiza o objeto global notionUsers
         Object.assign(notionUsers, updatedUsers);
         
-        // Atualiza o dashboard para os usuários com base na disciplina padrão de cada um
         if (notionUsers.joao && notionUsers.joao.total.subjects['Legislação PM-AL']) {
           const dados = notionUsers.joao.total.subjects['Legislação PM-AL'];
           document.getElementById('joao-progress').textContent = dados.acuracia + '%';
