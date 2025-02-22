@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso PM-AL - Plataforma Completa</title>
+    <style>
+        :root {
+            --azul-pm: #1E3A8A;
+            --azul-claro: #2563EB;
+            --cinza-claro: #F3F4F6;
+            --background: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            transition: background 0.3s;
+        }
+
+        .header {
+            background: var(--background);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .hero {
+            background-color: var(--azul-pm);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 4rem 2rem;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 15px;
+            background-color: var(--cinza-claro);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .disciplinas {
+            padding: 4rem 2rem;
+            background-color: var(--cinza-claro);
+        }
+
+        .disciplinas-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .disciplina-item {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .disciplina-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background-color: #f8f9fa;
+        }
+
+        .ferramentas {
+            padding: 4rem 2rem;
+        }
+
+        .ferramenta-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background-color: var(--cinza-claro);
+            border-radius: 15px;
+            transition: transform 0.3s;
+        }
+
+        .ferramenta-icon {
+            font-size: 2.5rem;
+            min-width: 60px;
+        }
+
+        .dashboards {
+            padding: 4rem 2rem;
+            background-color: white;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .dashboard-card {
+            background: var(--cinza-claro);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .time-filter {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .time-filter-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .active-time-filter {
+            background-color: var(--azul-pm);
+            color: white;
+        }
+
+        .progress-ring {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(var(--azul-pm) 75%, #e0e0e0 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem auto;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .subject-bar {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .subject-progress {
+            height: 100%;
+            background: var(--azul-pm);
+            width: 65%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .disciplinas-grid,
+            .dashboard-grid,
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: 4rem 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .dark-mode {
+            --background: #1F2937;
+            --cinza-claro: #374151;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Estudo PM-AL</h1>
+        <div>
+            <button onclick="toggleDarkMode()" style="margin-right: 1rem;">🌓 Modo Noturno</button>
+            <button onclick="startPomodoro()">⏱️ Iniciar Pomodoro</button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>Sua aprovação na PM-AL começa aqui</h1>
+        <p style="margin-bottom: 1rem; font-size: 1.1rem;">Prepare-se de forma eficiente com materiais exclusivos e metodologia comprovada</p>
+    </section>
+
+    <section class="dashboards">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Desempenho dos Usuários</h2>
+        <div class="dashboard-grid">
+            <!-- Dashboard João Pedro -->
+            <div class="dashboard-card">
+                <div class="time-filter">
+                    <button class="time-filter-btn active-time-filter" onclick="switchTimeFrame(this, 'joao')">Total</button>
+                    <button class="time-filter-btn" onclick="switchTimeFrame(this, 'joao')">Hoje</button>
+                </div>
+                <h3>👤 João Pedro</h3>
+                <div class="progress-ring" id="joao-progress">75%</div>
+                <div class="stats">
+                    <p>🎯 Acurácia Geral: <span id="joao-acuracia">82%</span></p>
+                    <p>✅ Questões Corretas: <span id="joao-correct">148</span>/<span id="joao-total">180</span></p>
+                    <div class="subject-bar">
+                        <div class="subject-progress" id="joao-subject1" style="width: 65%"></div>
+                    </div>
+                    <p>Legislação PM-AL</p>
+                    <div class="subject-bar">
+                        <div class="subject-progress" id="joao-subject2" style="width: 80%"></div>
+                    </div>
+                    <p>Português</p>
+                </div>
+            </div>
+
+            <!-- Dashboard José Gerônimo -->
+            <div class="dashboard-card">
+                <div class="time-filter">
+                    <button class="time-filter-btn active-time-filter" onclick="switchTimeFrame(this, 'jose')">Total</button>
+                    <button class="time-filter-btn" onclick="switchTimeFrame(this, 'jose')">Hoje</button>
+                </div>
+                <h3>👤 José Gerônimo</h3>
+                <div class="progress-ring" id="jose-progress">89%</div>
+                <div class="stats">
+                    <p>🎯 Acurácia Geral: <span id="jose-acuracia">91%</span></p>
+                    <p>✅ Questões Corretas: <span id="jose-correct">205</span>/<span id="jose-total">225</span></p>
+                    <div class="subject-bar">
+                        <div class="subject-progress" id="jose-subject1" style="width: 92%"></div>
+                    </div>
+                    <p>Direito Constitucional</p>
+                    <div class="subject-bar">
+                        <div class="subject-progress" id="jose-subject2" style="width: 78%"></div>
+                    </div>
+                    <p>Matemática</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="feature-card">
+            <h3>📚 Material Completo</h3>
+            <p>Apostilas, videoaulas e resumos atualizados para todas as disciplinas</p>
+        </div>
+        <div class="feature-card">
+            <h3>📝 Simulados Personalizados</h3>
+            <p>Monte seus próprios simulados e acompanhe seu desempenho</p>
+        </div>
+        <div class="feature-card">
+            <h3>👥 Comunidade Ativa</h3>
+            <p>Interaja com outros candidatos e tire suas dúvidas</p>
+        </div>
+    </section>
+
+    <section class="disciplinas">
+        <h2 style="text-align: center; margin-bottom: 1rem;">Disciplinas Disponíveis</h2>
+        <div class="disciplinas-grid">
+            <a href="LINK_DRIVE_PORTUGUES" class="disciplina-item" target="_blank">
+                Língua Portuguesa
+            </a>
+            <a href="LINK_DRIVE_INFORMATICA" class="disciplina-item" target="_blank">
+                Noções de Informática
+            </a>
+            <a href="LINK_DRIVE_LEGISLACAO" class="disciplina-item" target="_blank">
+                Legislação PM-AL
+            </a>
+            <a href="LINK_DRIVE_MATEMATICA" class="disciplina-item" target="_blank">
+                Matemática
+            </a>
+            <a href="LINK_DRIVE_CIENCIAS_SOCIAIS" class="disciplina-item" target="_blank">
+                Ciências Sociais
+            </a>
+            <a href="LINK_DRIVE_DIREITO_ADM" class="disciplina-item" target="_blank">
+                Direito Administrativo
+            </a>
+            <a href="LINK_DRIVE_DIREITO_CONST" class="disciplina-item" target="_blank">
+                Direito Constitucional
+            </a>
+            <a href="LINK_DRIVE_PROCESSO_PENAL" class="disciplina-item" target="_blank">
+                Processo Penal
+            </a>
+            <a href="LINK_DRIVE_DIREITOS_HUMANOS" class="disciplina-item" target="_blank">
+                Direitos Humanos
+            </a>
+        </div>
+    </section>
+
+    <section class="ferramentas">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Ferramentas de Estudo</h2>
+        <div class="ferramenta-item">
+            <span class="ferramenta-icon">⏱️</span>
+            <div>
+                <h3>Cronômetro Pomodoro</h3>
+                <p>Técnica de estudo de 25 minutos com intervalos programados</p>
+            </div>
+        </div>
+        <div class="ferramenta-item">
+            <span class="ferramenta-icon">📈</span>
+            <div>
+                <h3>Análise de Desempenho</h3>
+                <p>Gráficos detalhados e relatórios de progresso</p>
+            </div>
+        </div>
+    </section>
+
+    <footer style="background: var(--azul-pm); color: white; padding: 3rem; text-align: center; margin-top: 4rem;">
+        <p>© 2024 Plataforma de Estudos PM-AL - Todos os direitos reservados</p>
+    </footer>
+
+    <script>
+        // Dados atualizados com informações para Total e Hoje
+        const notionUsers = {
+            'joao': {
+                total: {
+                    accuracy: 82,
+                    correct: 148,
+                    total: 180,
+                    subjects: {
+                        'Legislação PM-AL': 65,
+                        'Português': 80
+                    }
+                },
+                hoje: {
+                    accuracy: 88,
+                    correct: 22,
+                    total: 25,
+                    subjects: {
+                        'Legislação PM-AL': 75,
+                        'Português': 85
+                    }
+                }
+            },
+            'jose': {
+                total: {
+                    accuracy: 91,
+                    correct: 205,
+                    total: 225,
+                    subjects: {
+                        'Direito Constitucional': 92,
+                        'Matemática': 78
+                    }
+                },
+                hoje: {
+                    accuracy: 94,
+                    correct: 47,
+                    total: 50,
+                    subjects: {
+                        'Direito Constitucional': 95,
+                        'Matemática': 82
+                    }
+                }
+            }
+        };
+
+        function switchTimeFrame(btn, user) {
+            // Ativar botão clicado
+            const buttons = btn.parentElement.querySelectorAll('button');
+            buttons.forEach(b => b.classList.remove('active-time-filter'));
+            btn.classList.add('active-time-filter');
+            
+            // Determinar timeframe
+            const timeFrame = btn.textContent.toLowerCase();
+            const userData = notionUsers[user][timeFrame];
+
+            // Atualizar dados do dashboard
+            const dashboard = btn.closest('.dashboard-card');
+            
+            // Atualizar progresso geral
+            dashboard.querySelector('.progress-ring').style.background = 
+                `conic-gradient(var(--azul-pm) ${userData.accuracy}%, #e0e0e0 0)`;
+            dashboard.querySelector('.progress-ring').textContent = `${userData.accuracy}%`;
+
+            // Atualizar estatísticas
+            dashboard.querySelector(`#${user}-acuracia`).textContent = `${userData.accuracy}%`;
+            dashboard.querySelector(`#${user}-correct`).textContent = userData.correct;
+            dashboard.querySelector(`#${user}-total`).textContent = userData.total;
+
+            // Atualizar barras de matérias
+            const subjects = Object.values(userData.subjects);
+            dashboard.querySelectorAll('.subject-progress').forEach((bar, index) => {
+                bar.style.width = `${subjects[index]}%`;
+            });
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function startPomodoro(minutes = 25) {
+            const timer = document.createElement('div');
+            timer.style.position = 'fixed';
+            timer.style.bottom = '20px';
+            timer.style.right = '20px';
+            timer.style.backgroundColor = 'var(--azul-pm)';
+            timer.style.color = 'white';
+            timer.style.padding = '1rem 2rem';
+            timer.style.borderRadius = '10px';
+            timer.style.zIndex = '1000';
+            
+            let seconds = minutes * 60;
+            const updateTimer = () => {
+                const min = Math.floor(seconds / 60);
+                const sec = seconds % 60;
+                timer.textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+                
+                if(seconds <= 0) {
+                    clearInterval(interval);
+                    timer.remove();
+                    alert('Tempo de estudo concluído! Hora de uma pausa.');
+                }
+                seconds--;
+            };
+            
+            const interval = setInterval(updateTimer, 1000);
+            document.body.appendChild(timer);
+            updateTimer();
+        }
+
+        // Links do Google Drive
+        const driveLinks = {
+            'Língua Portuguesa': 'https://drive.google.com/drive/folders/16eAPcQBg61L6uSVrEKLdj_JVydBZzXRE?usp=drive_link',
+            'Noções de Informática': '#',
+            'Legislação PM-AL': 'https://drive.google.com/drive/folders/17-GzLcsxbKVBOOEFPibtJRg7m9_AAgTO?usp=drive_link',
+            'Matemática': 'https://drive.google.com/drive/folders/16AAqfUGczvHyszz8G4BfmomRw3ZpCHze?usp=drive_link',
+            'Ciências Sociais': '#',
+            'Direito Administrativo': '#',
+            'Direito Constitucional': 'https://drive.google.com/drive/folders/1CLCmZdu9RFomIRq_BiKsVeF0d_J62PK-?usp=drive_link',
+            'Processo Penal': 'https://drive.google.com/drive/folders/1k5J_FuF_24m7Emg8JsUUamhrBGQoZMPM?usp=drive_link',
+            'Direitos Humanos': '#'
+        };
+
+        document.querySelectorAll('.disciplina-item').forEach(item => {
+            const disciplina = item.textContent.trim();
+            item.href = driveLinks[disciplina] || '#';
+        });
+    </script>
+</body>
+</html>
