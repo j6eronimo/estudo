@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Curso PM-AL - Plataforma Completa</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
   <style>
     :root {
       --azul-pm: #4682B4;
@@ -44,6 +46,7 @@
       cursor: pointer;
       transition: background 0.3s;
       color: inherit;
+      margin-left: 0.5rem;
     }
     .header button:hover {
       background: var(--button-hover);
@@ -53,10 +56,6 @@
       color: white;
       padding: 4rem 2rem;
       text-align: center;
-    }
-    .hero h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1.5rem;
     }
     .features {
       display: grid;
@@ -95,8 +94,6 @@
       color: inherit;
       display: block;
       transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
-      cursor: pointer;
-      border: none;
     }
     .disciplina-item:hover {
       transform: translateY(-3px);
@@ -124,6 +121,9 @@
     .dashboards {
       padding: 4rem 2rem;
       background-color: white;
+    }
+    .dark-mode .dashboards {
+      background-color: var(--background);
     }
     .dashboard-grid {
       display: grid;
@@ -184,21 +184,8 @@
       border-radius: 5px;
       transition: width 0.5s ease;
     }
-    @media (max-width: 768px) {
-      .disciplinas-grid,
-      .dashboard-grid,
-      .features {
-        grid-template-columns: 1fr;
-      }
-      .hero {
-        padding: 4rem 1rem;
-      }
-      .hero h1 {
-        font-size: 2rem;
-      }
-    }
-    /* Estilos para a Modal Pomodoro */
-    .pomodoro-modal {
+    .pomodoro-modal,
+    .registro-modal {
       display: none;
       position: fixed;
       top: 0;
@@ -210,7 +197,8 @@
       justify-content: center;
       align-items: center;
     }
-    .pomodoro-content {
+    .pomodoro-content,
+    .registro-content {
       background: white;
       padding: 2rem;
       border-radius: 10px;
@@ -225,7 +213,27 @@
       cursor: pointer;
       font-size: 1.5rem;
     }
-    /* Dark Mode Styles */
+    .input-group {
+      margin-bottom: 1rem;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+    }
+    .delete-btn:hover {
+      background: #b02a37;
+    }
     .dark-mode {
       --background: #1F2937;
       --cinza-claro: #374151;
@@ -259,21 +267,14 @@
       background-color: #374151;
       color: #E5E7EB;
     }
-    /* Correção: Dashboard com fundo escuro no modo noturno */
-    .dark-mode .dashboards {
-      background-color: var(--background);
-    }
-    /* Adicionar novos estilos para anotações */
     .anotacoes-section {
       padding: 4rem 2rem;
       background-color: var(--cinza-claro);
     }
-
     .anotacoes-container {
       max-width: 800px;
       margin: 0 auto;
     }
-
     .nova-anotacao {
       background: var(--background);
       padding: 2rem;
@@ -281,25 +282,22 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       margin-bottom: 2rem;
     }
-
     .anotacoes-list {
       display: grid;
       gap: 1.5rem;
     }
-
     .anotacao-item {
       background: var(--background);
       padding: 1.5rem;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      position: relative;
     }
-
     .anotacao-date {
       font-size: 0.9rem;
       color: #6B7280;
       margin-bottom: 0.5rem;
     }
-
     textarea {
       width: 100%;
       padding: 1rem;
@@ -310,9 +308,45 @@
       background: var(--background);
       color: inherit;
     }
-
     .dark-mode textarea {
       border-color: #4B5563;
+    }
+    .save-btn {
+      background: var(--azul-pm);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+      width: 100%;
+      margin-top: 1rem;
+    }
+    .save-btn:hover {
+      background: #306090;
+    }
+    .filtro-disciplina {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .filtro-disciplina select {
+      padding: 0.5rem;
+      border-radius: 5px;
+      width: 200px;
+    }
+    @media (max-width: 768px) {
+      .disciplinas-grid,
+      .dashboard-grid,
+      .features {
+        grid-template-columns: 1fr;
+      }
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .hero h1 {
+        font-size: 2rem;
+      }
     }
   </style>
 </head>
@@ -320,11 +354,49 @@
   <header class="header">
     <h1>Estudo PM-AL</h1>
     <div>
-      <button onclick="toggleDarkMode()" style="margin-right: 1rem;">🌓 Modo Noturno</button>
-      <button onclick="openPomodoro()">⏱️ Iniciar Pomodoro</button>
+      <button onclick="toggleDarkMode()">🌓 Modo Noturno</button>
+      <button onclick="openRegistro()">📝 Registrar Questões</button>
+      <button onclick="openPomodoro()">⏱️ Pomodoro</button>
     </div>
   </header>
-  <!-- Modal Pomodoro -->
+
+  <div class="registro-modal" id="registroModal">
+    <div class="registro-content">
+      <span class="close-modal" onclick="closeRegistro()">&times;</span>
+      <h2>Registrar Desempenho</h2>
+      <div class="input-group">
+        <label>Usuário:</label>
+        <select id="registroUsuario">
+          <option value="joao">João Pedro</option>
+          <option value="jose">José Gerônimo</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Disciplina:</label>
+        <select id="registroDisciplina">
+          <option value="língua portuguesa">Língua Portuguesa</option>
+          <option value="legislação pm-al">Legislação PM-AL</option>
+          <option value="matemática">Matemática</option>
+          <option value="direito constitucional">Direito Constitucional</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Assunto:</label>
+        <input type="text" id="registroAssunto" list="assuntosList">
+        <datalist id="assuntosList"></datalist>
+      </div>
+      <div class="input-group">
+        <label>Questões Corretas:</label>
+        <input type="number" id="registroCorretas">
+      </div>
+      <div class="input-group">
+        <label>Total de Questões:</label>
+        <input type="number" id="registroTotal">
+      </div>
+      <button class="save-btn" onclick="salvarRegistro()">Salvar Registro</button>
+    </div>
+  </div>
+
   <div class="pomodoro-modal" id="pomodoroModal">
     <div class="pomodoro-content">
       <span class="close-modal" onclick="closePomodoro()">&times;</span>
@@ -333,20 +405,36 @@
         <span id="minutes">25</span>:<span id="seconds">00</span>
       </div>
       <div class="timer-buttons" style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
-        <button class="timer-btn" id="start" style="padding: 0.8rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; background-color: #28a745; color: white;"><i class="fas fa-play"></i></button>
-        <button class="timer-btn" id="pause" style="padding: 0.8rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; background-color: #ffc107; color: white;"><i class="fas fa-pause"></i></button>
-        <button class="timer-btn" id="reset" style="padding: 0.8rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; background-color: #dc3545; color: white;"><i class="fas fa-undo"></i></button>
+        <button class="timer-btn" id="start" style="padding: 0.8rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; background-color: #28a745; color: white;">
+          <i class="fas fa-play"></i>
+        </button>
+        <button class="timer-btn" id="pause" style="padding: 0.8rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; background-color: #ffc107; color: white;">
+          <i class="fas fa-pause"></i>
+        </button>
+        <button class="timer-btn" id="reset" style="padding: 0.8rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; background-color: #dc3545; color: white;">
+          <i class="fas fa-undo"></i>
+        </button>
       </div>
     </div>
   </div>
+
   <section class="hero">
-    <h1>Bora!</h1>
-    <p style="margin-bottom: 1rem; font-size: 1.1rem;">Hoje é sem acochambrar.</p>
+    <h1>Bora Estudar!</h1>
+    <p>Seu sucesso começa aqui</p>
   </section>
+
   <section class="dashboards">
-    <h2 style="text-align: center; margin-bottom: 2rem;">Desempenho dos Usuários</h2>
+    <h2 style="text-align: center; margin-bottom: 2rem;">Desempenho</h2>
+    <div class="filtro-disciplina">
+      <select id="filtroDisciplina" onchange="atualizarDashboard()">
+        <option value="geral">Geral</option>
+        <option value="língua portuguesa">Língua Portuguesa</option>
+        <option value="legislação pm-al">Legislação PM-AL</option>
+        <option value="matemática">Matemática</option>
+        <option value="direito constitucional">Direito Constitucional</option>
+      </select>
+    </div>
     <div class="dashboard-grid">
-      <!-- Dashboard João Pedro -->
       <div class="dashboard-card">
         <div class="time-filter">
           <button class="time-filter-btn active-time-filter" onclick="switchTimeFrame(this, 'joao')">Total</button>
@@ -355,211 +443,289 @@
         <h3>👤 João Pedro</h3>
         <div class="progress-ring" id="joao-progress">75%</div>
         <div class="stats">
-          <p>🎯 Acurácia Geral: <span id="joao-acuracia">82%</span></p>
-          <p>✅ Questões Corretas: <span id="joao-correct">148</span>/<span id="joao-total">180</span></p>
+          <p>🎯 Acurácia: <span id="joao-acuracia">82%</span></p>
+          <p>✅ Corretas: <span id="joao-correct">148</span>/<span id="joao-total">180</span></p>
           <div class="subject-bar">
-            <div class="subject-progress" id="joao-subject1" style="width: 65%"></div>
+            <div class="subject-progress" id="joao-subject1"></div>
           </div>
-          <p>Legislação PM-AL</p>
-          <div class="subject-bar">
-            <div class="subject-progress" id="joao-subject2" style="width: 80%"></div>
-          </div>
-          <p>Português</p>
         </div>
       </div>
-  <!-- Dashboard José Gerônimo -->
-  <div class="dashboard-card">
-    <div class="time-filter">
-      <button class="time-filter-btn active-time-filter" onclick="switchTimeFrame(this, 'jose')">Total</button>
-      <button class="time-filter-btn" onclick="switchTimeFrame(this, 'jose')">Hoje</button>
-    </div>
-    <h3>👤 José Gerônimo</h3>
-    <div class="progress-ring" id="jose-progress">89%</div>
-    <div class="stats">
-      <p>🎯 Acurácia Geral: <span id="jose-acuracia">91%</span></p>
-      <p>✅ Questões Corretas: <span id="jose-correct">205</span>/<span id="jose-total">225</span></p>
-      <div class="subject-bar">
-        <div class="subject-progress" id="jose-subject1" style="width: 92%"></div>
+      <div class="dashboard-card">
+        <div class="time-filter">
+          <button class="time-filter-btn active-time-filter" onclick="switchTimeFrame(this, 'jose')">Total</button>
+          <button class="time-filter-btn" onclick="switchTimeFrame(this, 'jose')">Hoje</button>
+        </div>
+        <h3>👤 José Gerônimo</h3>
+        <div class="progress-ring" id="jose-progress">89%</div>
+        <div class="stats">
+          <p>🎯 Acurácia: <span id="jose-acuracia">91%</span></p>
+          <p>✅ Corretas: <span id="jose-correct">205</span>/<span id="jose-total">225</span></p>
+          <div class="subject-bar">
+            <div class="subject-progress" id="jose-subject1"></div>
+          </div>
+        </div>
       </div>
-      <p>Direito Constitucional</p>
-      <div class="subject-bar">
-        <div class="subject-progress" id="jose-subject2" style="width: 78%"></div>
-      </div>
-      <p>Matemática</p>
     </div>
-  </div>
-</div>
   </section>
-   <section class="features">
+
+  <section class="features">
     <div class="feature-card">
       <h3>📚 Material Completo</h3>
-      <p>Apostilas, videoaulas e resumos atualizados para todas as disciplinas</p>
+      <p>Apostilas, videoaulas e resumos atualizados</p>
     </div>
     <div class="feature-card">
-      <h3>📓 Anotações</h3> <!-- Alterado aqui -->
-      <p>Salve e organize suas anotações sincronizadas com o Notion</p> <!-- Alterado aqui -->
+      <h3>📓 Anotações Inteligentes</h3>
+      <p>Organize seus registros de estudo</p>
     </div>
   </section>
 
-  <!-- Nova seção de anotações -->
   <section class="anotacoes-section">
     <div class="anotacoes-container">
-      <h2 style="text-align: center; margin-bottom: 2rem;">📝 Suas Anotações</h2>
-      
+      <h2 style="text-align: center; margin-bottom: 2rem;">📝 Anotações</h2>
       <div class="nova-anotacao">
-        <h3>Nova Anotação</h3>
         <textarea id="anotacaoContent" placeholder="Digite sua anotação..." rows="4"></textarea>
-        <button onclick="salvarAnotacao()" class="header-button">Salvar Anotação</button>
+        <button onclick="salvarAnotacao()" class="save-btn">Salvar Anotação</button>
       </div>
+      <div class="anotacoes-list" id="anotacoesList"></div>
+    </div>
+  </section>
 
-      <div class="anotacoes-list" id="anotacoesList">
-        <!-- Anotações serão carregadas aqui -->
-      </div>
-    </div>
-  </section>
   <section class="disciplinas">
-    <h2 style="text-align: center; margin-bottom: 1rem;">Disciplinas Disponíveis</h2>
+    <h2 style="text-align: center; margin-bottom: 1rem;">Disciplinas</h2>
     <div class="disciplinas-grid">
-      <a href="LINK_DRIVE_PORTUGUES" class="disciplina-item" target="_blank">Língua Portuguesa</a>
-      <a href="LINK_DRIVE_INFORMATICA" class="disciplina-item" target="_blank">Noções de Informática</a>
-      <a href="LINK_DRIVE_LEGISLACAO" class="disciplina-item" target="_blank">Legislação PM-AL</a>
-      <a href="LINK_DRIVE_MATEMATICA" class="disciplina-item" target="_blank">Matemática</a>
-      <a href="LINK_DRIVE_CIENCIAS_SOCIAIS" class="disciplina-item" target="_blank">Ciências Sociais</a>
-      <a href="LINK_DRIVE_DIREITO_ADM" class="disciplina-item" target="_blank">Direito Administrativo</a>
-      <a href="LINK_DRIVE_DIREITO_CONST" class="disciplina-item" target="_blank">Direito Constitucional</a>
-      <a href="LINK_DRIVE_PROCESSO_PENAL" class="disciplina-item" target="_blank">Processo Penal</a>
-      <a href="LINK_DRIVE_DIREITOS_HUMANOS" class="disciplina-item" target="_blank">Direitos Humanos</a>
+      <a href="https://drive.google.com/drive/folders/16eAPcQBg61L6uSVrEKLdj_JVydBZzXRE?usp=drive_link" class="disciplina-item" target="_blank">Língua Portuguesa</a>
+      <a href="https://drive.google.com/drive/folders/17-GzLcsxbKVBOOEFPibtJRg7m9_AAgTO?usp=drive_link" class="disciplina-item" target="_blank">Legislação PM-AL</a>
+      <a href="https://drive.google.com/drive/folders/16AAqfUGczvHyszz8G4BfmomRw3ZpCHze?usp=drive_link" class="disciplina-item" target="_blank">Matemática</a>
+      <a href="https://drive.google.com/drive/folders/1CLCmZdu9RFomIRq_BiKsVeF0d_J62PK-?usp=drive_link" class="disciplina-item" target="_blank">Direito Constitucional</a>
+      <a href="#" class="disciplina-item" target="_blank">Noções de Informática</a>
+      <a href="#" class="disciplina-item" target="_blank">Ciências Sociais</a>
     </div>
   </section>
+
   <section class="ferramentas">
-    <h2 style="text-align: center; margin-bottom: 2rem;">Ferramentas de Estudo</h2>
+    <h2 style="text-align: center; margin-bottom: 2rem;">Ferramentas</h2>
     <div class="ferramenta-item" onclick="openPomodoro()">
       <span class="ferramenta-icon">⏱️</span>
       <div>
-        <h3>Cronômetro Pomodoro</h3>
-        <p>Técnica de estudo de 25 minutos com intervalos programados</p>
+        <h3>Pomodoro</h3>
+        <p>Técnica de gestão de tempo</p>
       </div>
     </div>
     <div class="ferramenta-item">
-      <span class="ferramenta-icon">📈</span>
+      <span class="ferramenta-icon">📊</span>
       <div>
-        <h3>Análise de Desempenho</h3>
-        <p>Gráficos detalhados e relatórios de progresso</p>
+        <h3>Desempenho</h3>
+        <p>Analise seu progresso</p>
       </div>
     </div>
   </section>
 
-  <footer style="background: #1F2937; color: white; padding: 3rem; text-align: center; margin-top: 4rem;">
-    <p>© 2024 Plataforma de Estudos PM-AL - Todos os direitos reservados</p>
+  <footer style="background: #1F2937; color: white; padding: 2rem; text-align: center; margin-top: 4rem;">
+    <p>© 2024 Plataforma PM-AL - Todos os direitos reservados</p>
   </footer>
-  <script>
-    // Configurações do Notion (SUBSTITUA COM SEUS DADOS)
-    const NOTION_TOKEN = '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';
-    const NOTION_DATABASE_ID = '19fc133b75d9805595f1dda1da75f696';
 
-    // Estrutura de dados dos usuários
-    const notionUsers = {
-      joao: { total: {}, hoje: {} },
-      jose: { total: {}, hoje: {} }
+  <script>
+  // Configuração do Firebase (use ESSES dados)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDxQf2V2QmErD2V6Zj04RYzqjvUtZbYhCk",
+    authDomain: "site-estudo-1112.firebaseapp.com",
+    projectId: "site-estudo-1112",
+    storageBucket: "site-estudo-1112.firebasestorage.app",
+    messagingSenderId: "603993485994",
+    appId: "1:603993485994:web:d1b92170ec91c2935896d3"
+  };
+
+  // Inicializa o Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+    // Funções do Firebase
+    async function loadData() {
+      const snapshot = await db.collection('dashboard').get();
+      return snapshot.docs.reduce((acc, doc) => ({ ...acc, [doc.id]: doc.data() }), {});
+    }
+
+    async function saveData(data) {
+      for (const [userId, userData] of Object.entries(data)) {
+        await db.collection('dashboard').doc(userId).set(userData);
+      }
+    }
+
+    async function loadAnotacoes() {
+      const snapshot = await db.collection('anotacoes').orderBy('data', 'desc').get();
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+
+    async function saveAnotacao(anotacao) {
+      await db.collection('anotacoes').add(anotacao);
+    }
+
+    async function deleteAnotacao(id) {
+      await db.collection('anotacoes').doc(id).delete();
+    }
+
+    // Dados iniciais
+    let localData = {
+      joao: {
+        total: { acuracia: 82, certas: 148, total: 180 },
+        hoje: { acuracia: 85, certas: 15, total: 20 },
+        disciplinas: {}
+      },
+      jose: {
+        total: { acuracia: 91, certas: 205, total: 225 },
+        hoje: { acuracia: 88, certas: 22, total: 25 },
+        disciplinas: {}
+      }
     };
 
-    // Função para buscar dados do Notion
-    async function fetchNotionData() {
-      try {
-        const response = await fetch(`https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${NOTION_TOKEN}`,
-            'Notion-Version': '2022-06-28',
-            'Content-Type': 'application/json'
-          }
-        });
+    let assuntosSalvos = {};
 
-        if (!response.ok) throw new Error('Erro na resposta da API');
-        return await response.json();
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-        return { results: [] };
+    // Funções do Dashboard
+    async function updateDashboard(user, periodo) {
+      const filtro = document.getElementById('filtroDisciplina').value.toLowerCase();
+      let data;
+      
+      if (filtro === "geral") {
+        data = localData[user][periodo];
+      } else {
+        data = localData[user].disciplinas[filtro] || { acuracia: 0, certas: 0, total: 0 };
       }
+      
+      document.getElementById(`${user}-progress`).textContent = `${data.acuracia}%`;
+      document.getElementById(`${user}-acuracia`).textContent = `${data.acuracia}%`;
+      document.getElementById(`${user}-correct`).textContent = data.certas;
+      document.getElementById(`${user}-total`).textContent = data.total;
+      document.getElementById(`${user}-subject1`).style.width = `${data.acuracia}%`;
+      
+      await saveData(localData);
     }
 
-    // Processar dados do Notion
-    function processNotionData(notionData) {
-      notionData.results.forEach(page => {
-        const props = page.properties;
-        
-        // Extrair valores
-        const rawName = props.Nome?.select?.name || '';
-        const userName = rawName.toLowerCase().includes('joão') ? 'joao' : 'jose';
-        const periodo = props.Período?.select?.name?.toLowerCase() || 'total';
-        const disciplina = props.Disciplina?.select?.name || '';
-        const acuracia = props.Acurácia?.number || 0;
-        const certas = props.Certas?.number || 0;
-        const total = props.Total?.number || 0;
-
-        if (userName && periodo && disciplina) {
-          notionUsers[userName][periodo] = {
-            disciplina,
-            acuracia: Math.round(acuracia),
-            certas,
-            total
-          };
-        }
-      });
-    }
-
-    // Atualizar interface
-    function updateDashboardUI() {
-      // Atualizar João Pedro
-      if (notionUsers.joao.total) {
-        document.getElementById('joao-progress').textContent = `${notionUsers.joao.total.acuracia}%`;
-        document.getElementById('joao-acuracia').textContent = `${notionUsers.joao.total.acuracia}%`;
-        document.getElementById('joao-correct').textContent = notionUsers.joao.total.certas;
-        document.getElementById('joao-total').textContent = notionUsers.joao.total.total;
-        document.getElementById('joao-subject1').style.width = `${notionUsers.joao.total.acuracia}%`;
-      }
-
-      // Atualizar José Gerônimo
-      if (notionUsers.jose.total) {
-        document.getElementById('jose-progress').textContent = `${notionUsers.jose.total.acuracia}%`;
-        document.getElementById('jose-acuracia').textContent = `${notionUsers.jose.total.acuracia}%`;
-        document.getElementById('jose-correct').textContent = notionUsers.jose.total.certas;
-        document.getElementById('jose-total').textContent = notionUsers.jose.total.total;
-        document.getElementById('jose-subject1').style.width = `${notionUsers.jose.total.acuracia}%`;
-      }
-    }
-
-    // Função de filtro de período
     function switchTimeFrame(btn, user) {
+      const period = btn.textContent.trim().toLowerCase();
       const buttons = btn.parentElement.querySelectorAll('button');
       buttons.forEach(b => b.classList.remove('active-time-filter'));
       btn.classList.add('active-time-filter');
+      updateDashboard(user, period);
+    }
+
+    function atualizarDashboard() {
+      let periodJoao = document.querySelector("#joao-progress").parentElement.querySelector(".active-time-filter").textContent.trim().toLowerCase() || "total";
+      let periodJose = document.querySelector("#jose-progress").parentElement.querySelector(".active-time-filter").textContent.trim().toLowerCase() || "total";
+      updateDashboard('joao', periodJoao);
+      updateDashboard('jose', periodJose);
+    }
+
+    // Funções de Registro
+    function openRegistro() {
+      document.getElementById('registroModal').style.display = 'flex';
+      carregarAssuntos();
+    }
+
+    function closeRegistro() {
+      document.getElementById('registroModal').style.display = 'none';
+    }
+
+    async function carregarAssuntos() {
+      const disciplina = document.getElementById('registroDisciplina').value.toLowerCase();
+      const datalist = document.getElementById('assuntosList');
+      datalist.innerHTML = '';
       
-      const periodo = btn.textContent.toLowerCase();
-      const userData = notionUsers[user][periodo];
-      
-      if (userData) {
-        document.getElementById(`${user}-progress`).textContent = `${userData.acuracia}%`;
-        document.getElementById(`${user}-acuracia`).textContent = `${userData.acuracia}%`;
-        document.getElementById(`${user}-correct`).textContent = userData.certas;
-        document.getElementById(`${user}-total`).textContent = userData.total;
-        document.getElementById(`${user}-subject1`).style.width = `${userData.acuracia}%`;
+      const snapshot = await db.collection('assuntos').doc(disciplina).get();
+      if (snapshot.exists) {
+        snapshot.data().list.forEach(assunto => {
+          const option = document.createElement('option');
+          option.value = assunto;
+          datalist.appendChild(option);
+        });
       }
     }
 
-    // Carregar dados ao iniciar
-    async function loadNotionData() {
-      const notionData = await fetchNotionData();
-      processNotionData(notionData);
-      updateDashboardUI();
+    async function salvarRegistro() {
+      const usuario = document.getElementById('registroUsuario').value;
+      const disciplina = document.getElementById('registroDisciplina').value.trim().toLowerCase();
+      const assunto = document.getElementById('registroAssunto').value.trim();
+      const corretas = parseInt(document.getElementById('registroCorretas').value) || 0;
+      const total = parseInt(document.getElementById('registroTotal').value) || 0;
+
+      if (assunto !== "") {
+        if (!assuntosSalvos[disciplina]) assuntosSalvos[disciplina] = [];
+        if (!assuntosSalvos[disciplina].includes(assunto)) {
+          assuntosSalvos[disciplina].push(assunto);
+          await db.collection('assuntos').doc(disciplina).set({ list: assuntosSalvos[disciplina] });
+        }
+      }
+
+      // Atualiza dados locais
+      localData[usuario].total.certas += corretas;
+      localData[usuario].total.total += total;
+      localData[usuario].total.acuracia = Math.round(
+        (localData[usuario].total.certas / localData[usuario].total.total) * 100
+      );
+
+      localData[usuario].hoje.certas += corretas;
+      localData[usuario].hoje.total += total;
+      localData[usuario].hoje.acuracia = Math.round(
+        (localData[usuario].hoje.certas / localData[usuario].hoje.total) * 100
+      );
+
+      if (!localData[usuario].disciplinas[disciplina]) {
+        localData[usuario].disciplinas[disciplina] = { certas: 0, total: 0, acuracia: 0 };
+      }
+      localData[usuario].disciplinas[disciplina].certas += corretas;
+      localData[usuario].disciplinas[disciplina].total += total;
+      localData[usuario].disciplinas[disciplina].acuracia = Math.round(
+        (localData[usuario].disciplinas[disciplina].certas / localData[usuario].disciplinas[disciplina].total) * 100
+      );
+
+      await saveData(localData);
+      atualizarDashboard();
+      closeRegistro();
+    }
+
+    // Sistema de Anotações
+    async function salvarAnotacao() {
+      const texto = document.getElementById('anotacaoContent').value.trim();
+      if (!texto) return;
+      
+      const anotacao = {
+        texto: texto,
+        data: new Date().toLocaleString()
+      };
+      
+      await saveAnotacao(anotacao);
+      carregarAnotacoes();
+      document.getElementById('anotacaoContent').value = '';
+    }
+
+    async function carregarAnotacoes() {
+      const container = document.getElementById('anotacoesList');
+      container.innerHTML = '';
+      const anotacoes = await loadAnotacoes();
+      
+      anotacoes.forEach(anotacao => {
+        const div = document.createElement('div');
+        div.className = 'anotacao-item';
+        div.innerHTML = `
+          <div class="anotacao-date">${anotacao.data}</div>
+          <p>${anotacao.texto}</p>
+          <button class="delete-btn" onclick="excluirAnotacao('${anotacao.id}')">Excluir</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function excluirAnotacao(id) {
+      await deleteAnotacao(id);
+      carregarAnotacoes();
     }
 
     // Dark Mode
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
+    async function toggleDarkMode() {
+      const darkMode = document.body.classList.toggle('dark-mode');
+      await db.collection('config').doc('darkMode').set({ value: darkMode });
     }
 
-    // Lógica do Pomodoro (permanece igual)
+    // Pomodoro
     let timer;
     let isPaused = false;
     let minutes = 25;
@@ -580,10 +746,9 @@
                 alert("Tempo esgotado!");
                 resetTimer();
                 return;
-              } else {
-                minutes--;
-                seconds = 59;
               }
+              minutes--;
+              seconds = 59;
             } else {
               seconds--;
             }
@@ -619,28 +784,34 @@
       resetTimer();
     }
 
-    // Event Listeners
-    window.addEventListener('load', loadNotionData);
-    document.getElementById('start').addEventListener('click', startTimer);
-    document.getElementById('pause').addEventListener('click', pauseTimer);
-    document.getElementById('reset').addEventListener('click', resetTimer);
+    // Inicialização
+    window.addEventListener('load', async () => {
+      // Configuração do Dark Mode
+      const darkModeSnapshot = await db.collection('config').doc('darkMode').get();
+      if (darkModeSnapshot.exists && darkModeSnapshot.data().value) {
+        document.body.classList.add('dark-mode');
+      }
 
-    // Links do Google Drive (permanecem iguais)
-    const driveLinks = {
-      'Língua Portuguesa': 'https://drive.google.com/drive/folders/16eAPcQBg61L6uSVrEKLdj_JVydBZzXRE?usp=drive_link',
-      'Noções de Informática': '#',
-      'Legislação PM-AL': 'https://drive.google.com/drive/folders/17-GzLcsxbKVBOOEFPibtJRg7m9_AAgTO?usp=drive_link',
-      'Matemática': 'https://drive.google.com/drive/folders/16AAqfUGczvHyszz8G4BfmomRw3ZpCHze?usp=drive_link',
-      'Ciências Sociais': '#',
-      'Direito Administrativo': '#',
-      'Direito Constitucional': 'https://drive.google.com/drive/folders/1CLCmZdu9RFomIRq_BiKsVeF0d_J62PK-?usp=drive_link',
-      'Processo Penal': 'https://drive.google.com/drive/folders/1k5J_FuF_24m7Emg8JsUUamhrBGQoZMPM?usp=drive_link',
-      'Direitos Humanos': '#'
-    };
+      // Carrega dados do Firebase
+      const firebaseData = await loadData();
+      if (firebaseData) {
+        localData = firebaseData;
+      }
 
-    document.querySelectorAll('.disciplina-item').forEach(item => {
-      const disciplina = item.textContent.trim();
-      item.href = driveLinks[disciplina] || '#';
+      // Carrega assuntos
+      const assuntosSnapshot = await db.collection('assuntos').get();
+      assuntosSnapshot.forEach(doc => {
+        assuntosSalvos[doc.id] = doc.data().list;
+      });
+
+      // Inicializa dashboards
+      atualizarDashboard();
+      carregarAnotacoes();
+      
+      // Event listeners do Pomodoro
+      document.getElementById('start').addEventListener('click', startTimer);
+      document.getElementById('pause').addEventListener('click', pauseTimer);
+      document.getElementById('reset').addEventListener('click', resetTimer);
     });
   </script>
 </body>
